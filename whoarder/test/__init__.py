@@ -20,7 +20,7 @@ class TestImport(unittest.TestCase):
         '''
         test.txt should yield a certain number of clippings.
         '''
-        self.assertEqual(len(self.clippings), 17)
+        self.assertEqual(len(self.clippings), 18)
 
     def test_count_notes(self):
         '''
@@ -32,10 +32,10 @@ class TestImport(unittest.TestCase):
 
     def test_count_highlights(self):
         '''
-        test.txt should yield 13 highlights
+        test.txt should yield 14 highlights
         '''
         highlights = [i for i in self.clippings if i['type'] == 'Highlight']
-        self.assertEqual(len(highlights), 13)
+        self.assertEqual(len(highlights), 14)
 
     def test_count_bookmarks(self):
         '''
