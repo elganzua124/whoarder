@@ -74,14 +74,15 @@ class ClippingsIterator(object):
 
     _clipping_separator = '==========\n'
     _clipping_line1 = re.compile(r'''
-        ^(?P<book>.*)                            # Le Petit Prince
-        \ \((?P<author>.*)\)$                    #  (De Saint-Exupery, Antoine)
+        ^(?P<book>.*?)                           # Le Petit Prince
+        (\ \((?P<author>.*)\))?$                 #  (De Saint-Exupery, Antoine)
         ''', re.VERBOSE | re.IGNORECASE)
     _clipping_line2 = re.compile(r'''
-        ^-\ Your\ (?P<type>\w*)                         # Your Highlight
-        \ (?:on\ )?(?P<page>Unnumbered\ Page|Page\ .*)  #  on Page 42
-        \ \|\ (?:on\ |at\ )?Location\ (?P<location>.*)  #  | Location 123-321
-        \ \|\ Added\ on\ (?P<date>.*)$                  #  | Added on...
+        ^-\ Your\ (?P<type>\w*)                          # Your Highlight
+        (\ (?:on\ )?(?P<page>Unnumbered\ Page|Page\ .*)  #  on Page 42 |
+        \ \|)?
+        \ (?:on\ |at\ )?Location\ (?P<location>.*)       #  Location 123-321
+        \ \|\ Added\ on\ (?P<date>.*)$                   #  | Added on...
         ''', re.VERBOSE | re.IGNORECASE)
 
     def __init__(self, source):
@@ -96,8 +97,13 @@ class ClippingsIterator(object):
         count = 1
         while True:
             if count > 5:
-                raise InvalidFormatException('''Input file doesn't seem to be
-                a clippings file, separators are missing or damaged''')
+                # Notes can contain more than 5 lines per block (as note itself
+                # can be multi-line)
+                hl_type = self._clipping_line2.search(clipping_buffer[1]).groupdict()['type']
+
+                if hl_type != 'Note':
+                    raise InvalidFormatException('''Input file doesn't seem to be
+                        a clippings file, separators are missing or damaged''')
             if self.source_file.closed:
                 raise StopIteration
 
@@ -125,7 +131,10 @@ class ClippingsIterator(object):
             line_dict = self._clipping_line1.search(clipping_buffer[0]).groupdict()
             line_dic2 = self._clipping_line2.search(clipping_buffer[1]).groupdict()
             line_dict.update(line_dic2)
-            line_dict['contents'] = clipping_buffer[3]
+            if line_dic2['type'] == 'Note':
+                line_dict['contents'] = "\n".join(clipping_buffer[3:]).strip()
+            else:
+                line_dict['contents'] = clipping_buffer[3]
             return line_dict
         except AttributeError:
             print("Failed to import the following note, please report to https://github.com/ronjouch/whoarder :\n  {0}\n".format(clipping_buffer))
