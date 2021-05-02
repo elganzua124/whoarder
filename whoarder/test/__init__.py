@@ -20,7 +20,7 @@ class TestImport(unittest.TestCase):
         '''
         test.txt should yield a certain number of clippings.
         '''
-        self.assertEqual(len(self.clippings), 20)
+        self.assertEqual(len(self.clippings), 21)
 
     def test_count_notes(self):
         '''
@@ -32,10 +32,10 @@ class TestImport(unittest.TestCase):
 
     def test_count_highlights(self):
         '''
-        test.txt should yield 14 highlights
+        test.txt should yield 15 highlights
         '''
         highlights = [i for i in self.clippings if i['type'] == 'Highlight']
-        self.assertEqual(len(highlights), 15)
+        self.assertEqual(len(highlights), 16)
 
     def test_count_bookmarks(self):
         '''
@@ -101,6 +101,17 @@ class TestImport(unittest.TestCase):
         self.assertEqual(len(notes), 1)
         self.assertEqual(notes[0]['contents'], "Idea: explore these concepts\nin further detail")
 
+    def test_paranethsis_in_book_name(self):
+        '''
+        Book names can contain parentheses.
+        '''
+        highlights = [i for i in self.clippings if 'Refactoring' in i['book']]
+        self.assertEqual(len(highlights), 1)
+        self.assertEqual(
+            highlights[0]['book'],
+            "Refactoring: Improving the Design of Existing Code, Second Edition (John Smith's Library)")
+        self.assertEqual(highlights[0]['author'], "Martin Fowler")
+
 
 class TestWrongImport(unittest.TestCase):
 
@@ -110,6 +121,7 @@ class TestWrongImport(unittest.TestCase):
         '''
         with self.assertRaises(FileNotFoundError):
             self.clippings = Clippings('bar.txt')
+
 
 if __name__ == '__main__':
     unittest.main()
