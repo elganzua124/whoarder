@@ -45,7 +45,7 @@ class Clippings(object):
         from jinja2 import Environment, PackageLoader  # available from pip
         env = Environment(loader=PackageLoader('whoarder', 'templates'),
                           autoescape=True,
-                          extensions=['jinja2.ext.autoescape'])
+                          extensions=['jinja2.ext.autoescape', 'jinja2.ext.loopcontrols'])
         template = env.get_template('template1.html')
         render = template.render(clippings=self.clippings,
                                  book_author_couples=self.book_author_couples)
